@@ -9,9 +9,14 @@ const initialState = { fortyTwo: 42 };
 
 let wrapper;
 let store;
+let storeWithMockedDispatch;
 
 beforeEach(() => {
-  store = mockStore(initialState)
+  store = mockStore(initialState);
+  storeWithMockedDispatch = {
+    ...store,
+    dispatch: () => {}
+  };
 });
 
 test('Render the main component when no resolvers are provided', () => {
@@ -29,7 +34,7 @@ test('Call dispatch with the action creator function when a value is unresolved'
   let dispatchCalled = false;
   let actionCalled = false;
 
-  const storeWithMockedDispatch = {
+  const storeWithSpyedDispatch = {
     ...store,
     dispatch: () => {
       dispatchCalled = true;
@@ -46,7 +51,7 @@ test('Call dispatch with the action creator function when a value is unresolved'
 
   const reduxStateResolver = mount(
     <ReduxStateResolver
-      store={storeWithMockedDispatch}
+      store={storeWithSpyedDispatch}
       resolvers={[
         resolver
       ]}
@@ -73,11 +78,6 @@ test('Renders as far into the resolver chain as possible', () => {
     }
   ];
 
-  const storeWithMockedDispatch = {
-    ...store,
-    dispatch: () => {}
-  };
-
   const reduxStateResolver = mount(
     <ReduxStateResolver
       store={storeWithMockedDispatch}
@@ -87,4 +87,45 @@ test('Renders as far into the resolver chain as possible', () => {
   );
 
   expect(reduxStateResolver.text()).toEqual('Fail2');
+});
+
+test('Throw error when given a bad resolver (incorrect properties)', () => {
+  // Supress expected errors in output
+  spyOn(console, 'error');
+
+  expect(() => {
+    const reduxStateResolver = mount(
+      <ReduxStateResolver
+        store={storeWithMockedDispatch}
+        resolvers={[
+          {
+            a: 'hello'
+          }
+        ]}
+        component={SuccessComponent}
+      />
+    );
+  }).toThrow();
+});
+
+test('Throw error when given a bad resolver (bad component)', () => {
+  // Supress expected errors in output
+  spyOn(console, 'error');
+  const notComponent = () => /regex/;
+
+  expect(() => {
+    const reduxStateResolver = mount(
+      <ReduxStateResolver
+        store={storeWithMockedDispatch}
+        resolvers={[
+          {
+            test: () => false,
+            action: () => {},
+            component: notComponent
+          }
+        ]}
+        component={SuccessComponent}
+      />
+    );
+  }).toThrow();
 });

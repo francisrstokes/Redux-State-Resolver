@@ -1,22 +1,25 @@
 # Redux State Resolver
 
-💡 Redux State Resolver is a react component that cleanly resolves a sequence of dependencies in state, so you can keep all that logic outside of your view component.
+💡 Redux State Resolver cleanly resolves a sequence of dependencies, allowing you to write view logic that can assume the state has what it needs.
 
 ```javascript
+const loginResolver = {
+  test: state => state.isLoggedIn,
+  action: () => push('/login'),
+  component: () => null
+};
+
+const profileResolver = {
+  test: state => state.user.profile,
+  action: state => getProfile(state.user.id, state.authToken),
+  component: () => <div>Loading profile...</div>
+};
+
 <ReduxStateResolver
   resolvers={[
-    {
-      test: state => state.asyncItem !== null,
-      action: () => asyncItemActionCreatorFunction,
-      component: () => <div>Loading async item...</div>
-    },
-    {
-      test: state => state.anotherAsyncItem !== null,
-      action: state => anotherActionCreatorUsingState(state.userId),
-      component: () => <div>Loading another item...</div>
-    }
+    loginResolver,
+    profileResolver
   ]}
-  component={() => <div>All done!</div>}
+  component={ViewComponentUsingProfile}
 >
 ```
-
