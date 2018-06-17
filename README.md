@@ -23,3 +23,34 @@ const profileResolver = {
   component={ViewComponentUsingProfile}
 >
 ```
+
+## Installation
+
+```bash
+# with yarn
+yarn install redux-state-resolver
+
+# or with npm
+npm i redux-state-resolver
+```
+
+## Resolve objects
+
+A resolver is just a plain javascript object with 3 properties:
+
+```javascript
+{
+  // The test function recieves state, and returns
+  // false if the dependency still needs to be resolved
+  test: state => state.user.profile,
+
+  // The action function is called if the test function returns false.
+  // It is passed state, and should return an action, which is dispatched.
+  action: state => actionCreator(state.aThing),
+
+  // The component is a React component that is rendered while waiting for
+  // the dependency to be resolved in state.
+  component: () => <div>Loading...</div>
+}
+```
+
