@@ -28,7 +28,7 @@ const profileResolver = {
 
 ```bash
 # with yarn
-yarn install redux-state-resolver
+yarn add redux-state-resolver
 
 # or with npm
 npm i redux-state-resolver

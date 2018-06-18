@@ -7,7 +7,7 @@ class UnconnectedReduxStateResolver extends React.Component {
     this.state = {
       shouldUpdate: () => true,
       isSet: false,
-      component: () => null
+      component: props.component
     }
   }
 
@@ -17,26 +17,37 @@ class UnconnectedReduxStateResolver extends React.Component {
       : true;
   }
 
-  static getDerivedStateFromProps(props, state) {
-    const {resolvers, reduxState, dispatch, component} = props;
+  onUpdateOrMount() {
+    const {resolvers, reduxState, dispatch, component} = this.props;
 
     for (const resolver of resolvers) {
       if (!resolver.test(reduxState)) {
         dispatch(resolver.action(reduxState));
-        return {
-          ...state,
+        this.setState({
+          ...this.state,
           shouldUpdate: resolver.test,
           isSet: true,
           component: resolver.component
-        };
+        });
+        return;
       }
     }
 
-    return {
-      ...state,
-      isSet: false,
-      component
-    };
+    if (this.state.isSet) {
+      this.setState({
+        ...this.state,
+        isSet: false,
+        component
+      });
+    }
+  }
+
+  componentDidMount() {
+    this.onUpdateOrMount();
+  }
+
+  componentDidUpdate() {
+    this.onUpdateOrMount();
   }
 
   render() {
