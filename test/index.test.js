@@ -42,11 +42,11 @@ test('Call dispatch with the action creator function when a value is unresolved'
   };
 
   const resolver = {
-    test: ({fortyTwo}) => fortyTwo === 41,
+    select: ({fortyTwo}) => fortyTwo === 41,
     action: () => {
       actionCalled = true;
     },
-    component: FailComponent
+    intermediateComponent: FailComponent
   };
 
   const reduxStateResolver = mount(
@@ -67,14 +67,14 @@ test('Call dispatch with the action creator function when a value is unresolved'
 test('Renders as far into the resolver chain as possible', () => {
   const resolvers = [
     {
-      test: ({fortyTwo}) => fortyTwo === 42,
+      select: ({fortyTwo}) => fortyTwo === 42,
       action: () => {},
-      component: FailComponent
+      intermediateComponent: FailComponent
     },
     {
-      test: ({fortyTwo}) => fortyTwo === 41,
+      select: ({fortyTwo}) => fortyTwo === 41,
       action: () => {},
-      component: Fail2Component
+      intermediateComponent: Fail2Component
     }
   ];
 
@@ -119,9 +119,9 @@ test('Throw error when given a bad resolver (bad component)', () => {
         store={storeWithMockedDispatch}
         resolvers={[
           {
-            test: () => false,
+            select: () => false,
             action: () => {},
-            component: notComponent
+            intermediateComponent: notComponent
           }
         ]}
         component={SuccessComponent}
