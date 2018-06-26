@@ -1,6 +1,8 @@
 # Redux State Resolver
 
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/francisrstokes/Redux-State-Resolver)
+[![npm version](https://badge.fury.io/js/redux-state-resolver.svg)]()
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)]()
+[![CircleCI](https://img.shields.io/circleci/project/github/francisrstokes/Redux-State-Resolver.svg)]()
 
 💡 Cleanly resolve a sequence of dependencies -  write component logic that can assume the state has what it needs.
 
