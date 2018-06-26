@@ -1,7 +1,7 @@
 import React from 'react';
 import { shallow, mount} from 'enzyme';
 import {Fail2Component, FailComponent, SuccessComponent} from './mock-components';
-import {ReduxStateResolver} from '../src/lib';
+import {ReduxStateResolver} from '../src';
 import configureTests from './configure-tests';
 
 const {mockStore} = configureTests();
@@ -19,13 +19,48 @@ beforeEach(() => {
   };
 });
 
-test('Render the main component when no resolvers are provided', () => {
+test('Render the main component when no resolvers are provided (component)', () => {
   const reduxStateResolver = mount(
     <ReduxStateResolver
       store={store}
       resolvers={[]}
       component={SuccessComponent}
     />
+  );
+  expect(reduxStateResolver.text()).toEqual('Success');
+});
+
+test('Render the main component when no resolvers are provided (render prop)', () => {
+  const reduxStateResolver = mount(
+    <ReduxStateResolver
+      store={store}
+      resolvers={[]}
+      render={() => <SuccessComponent/>}
+    />
+  );
+  expect(reduxStateResolver.text()).toEqual('Success');
+});
+
+test('Render the main component when no resolvers are provided (children render prop)', () => {
+  const reduxStateResolver = mount(
+    <ReduxStateResolver
+      store={store}
+      resolvers={[]}
+    >
+      {() => <SuccessComponent/>}
+    </ReduxStateResolver>
+  );
+  expect(reduxStateResolver.text()).toEqual('Success');
+});
+
+test('Render the main component when no resolvers are provided (children)', () => {
+  const reduxStateResolver = mount(
+    <ReduxStateResolver
+      store={store}
+      resolvers={[]}
+    >
+      <SuccessComponent/>
+    </ReduxStateResolver>
   );
   expect(reduxStateResolver.text()).toEqual('Success');
 });
@@ -89,6 +124,103 @@ test('Renders as far into the resolver chain as possible', () => {
   expect(reduxStateResolver.text()).toEqual('Fail2');
 });
 
+test('Renders resolver component (component)', () => {
+  const resolvers = [
+    {
+      select: ({fortyTwo}) => fortyTwo === 41,
+      action: () => {},
+      component: FailComponent
+    }
+  ];
+
+  const reduxStateResolver = mount(
+    <ReduxStateResolver
+      store={storeWithMockedDispatch}
+      resolvers={resolvers}
+      component={SuccessComponent}
+    />
+  );
+
+  expect(reduxStateResolver.text()).toEqual('Fail');
+});
+
+test('Renders resolver component (intermediateComponent)', () => {
+  const resolvers = [
+    {
+      select: ({fortyTwo}) => fortyTwo === 41,
+      action: () => {},
+      component: FailComponent
+    }
+  ];
+
+  const reduxStateResolver = mount(
+    <ReduxStateResolver
+      store={storeWithMockedDispatch}
+      resolvers={resolvers}
+      intermediateComponent={SuccessComponent}
+    />
+  );
+
+  expect(reduxStateResolver.text()).toEqual('Fail');
+});
+
+test('Renders resolver component (render prop)', () => {
+  const resolvers = [
+    {
+      select: ({fortyTwo}) => fortyTwo === 41,
+      action: () => {},
+      component: FailComponent
+    }
+  ];
+
+  const reduxStateResolver = mount(
+    <ReduxStateResolver
+      store={storeWithMockedDispatch}
+      resolvers={resolvers}
+      render={() => <SuccessComponent/>}
+    />
+  );
+
+  expect(reduxStateResolver.text()).toEqual('Fail');
+});
+
+test('Throw error when given a bad resolver (bad action creator)', () => {
+  // Supress expected errors in output
+  spyOn(console, 'error');
+
+  expect(() => {
+    const reduxStateResolver = mount(
+      <ReduxStateResolver
+        store={storeWithMockedDispatch}
+        resolvers={[
+          {
+            select: () => false,
+            action: { not: 'a function' },
+            render: () => <FailComponent/>
+          }
+        ]}
+        component={SuccessComponent}
+      />
+    );
+  }).toThrow();
+
+  expect(() => {
+    const reduxStateResolver = mount(
+      <ReduxStateResolver
+        store={storeWithMockedDispatch}
+        resolvers={[
+          {
+            select: () => false,
+            syncAction: { not: 'a function' },
+            render: () => <FailComponent/>
+          }
+        ]}
+        component={SuccessComponent}
+      />
+    );
+  }).toThrow();
+});
+
 test('Throw error when given a bad resolver (incorrect properties)', () => {
   // Supress expected errors in output
   spyOn(console, 'error');
@@ -122,6 +254,22 @@ test('Throw error when given a bad resolver (bad component)', () => {
             select: () => false,
             action: () => {},
             intermediateComponent: notComponent
+          }
+        ]}
+        component={SuccessComponent}
+      />
+    );
+  }).toThrow();
+
+  expect(() => {
+    const reduxStateResolver = mount(
+      <ReduxStateResolver
+        store={storeWithMockedDispatch}
+        resolvers={[
+          {
+            select: () => false,
+            action: () => {},
+            render: notComponent
           }
         ]}
         component={SuccessComponent}

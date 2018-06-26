@@ -1,18 +1,38 @@
 # Redux State Resolver
 
-💡 Redux State Resolver cleanly resolves a sequence of dependencies, allowing you to write view logic that can assume the state has what it needs.
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/francisrstokes/Redux-State-Resolver)
+
+💡 Cleanly resolve a sequence of dependencies -  write component logic that can assume the state has what it needs.
+
+- [Description](#description)
+- [Installation](#installation)
+- [API](#api)
+  - [Component](#component)
+    - [Component Prop](#component-prop)
+    - [Children](#children)
+    - [Child Render Prop](#child-render-prop)
+    - [Render Prop](#render-prop)
+  - [Resolver Object](#resolver-object)
+
+## Description
+
+ReduxStateResolver is a component that uses resolver objects to separate the checking of state dependencies from the components that use them, resulting in cleaner views and better code organisation.
+
+It takes a list of resolver objects as a prop, and only renders the target component when all the resolvers pass. Otherwise an intermediate component associated with the missing dependency is rendered.
+
+It works great with the routing layer, ensuring that view components can be written without a bunch of if statements checking for every permuation of missing state.
 
 ```javascript
 const loginResolver = {
   select: state => state.isLoggedIn,
   action: () => push('/login'),
-  intermediateComponent: () => null
+  render: () => <div>Redirecting to login...</div>
 };
 
 const profileResolver = {
   select: state => state.user.profile,
   action: state => getProfile(state.user.id, state.authToken),
-  intermediateComponent: () => <div>Loading profile...</div>
+  render: () => <div>Loading profile...</div>
 };
 
 <ReduxStateResolver
@@ -21,8 +41,9 @@ const profileResolver = {
     loginResolver,
     profileResolver
   ]}
-  component={ViewComponentUsingProfile}
 >
+  <ViewComponentUsingProfile/>
+</ReduxStateResolver>
 ```
 
 ## Installation
@@ -35,9 +56,61 @@ yarn add redux-state-resolver
 npm i redux-state-resolver
 ```
 
-## Resolve objects
+## API
 
-A resolver is just a plain javascript object with 3 properties:
+### Component
+
+The component that is rendered when all dependencies are resolved can be specified multiple ways. Depending on your use case you may want to use one way or another.
+
+#### Component prop
+
+```javascript
+<ReduxStateResolver
+  store={store}
+  resolvers={resolverList}
+  component={ViewComponentUsingProfile}
+/>
+```
+
+#### Children
+
+```javascript
+<ReduxStateResolver
+  store={store}
+  resolvers={resolverList}
+>
+  <ViewComponentUsingProfile/>
+</ReduxStateResolver>
+```
+
+#### Child render prop
+
+```javascript
+<ReduxStateResolver
+  store={store}
+  resolvers={resolverList}
+>
+  {(state) => {
+    return <ViewComponentUsingProfile userProfile={state.profile} />
+  }}
+</ReduxStateResolver>
+```
+
+#### Render prop
+
+```javascript
+<ReduxStateResolver
+  store={store}
+  resolvers={resolverList}
+  render={(state) => {
+    return <ViewComponentUsingProfile userProfile={state.profile} />
+  }}
+/>
+```
+
+### Resolver object
+
+A resolver is just a plain javascript object with a few properties:
 
 ```javascript
 {
@@ -49,9 +122,21 @@ A resolver is just a plain javascript object with 3 properties:
   // It is passed state, and should return an action, which is dispatched.
   action: state => actionCreator(state.aThing),
 
-  // The intermediateComponent is a React component that is rendered while waiting for
+  // Action creators are assumed to be asyncronously resolving - they do not
+  // immediately update state. This is most often the case when the action starts
+  // a http request.
+  // If this is not the case, use a 'syncAction' creator instead.
+  syncAction: state => actionCreator(state.aThing),
+
+  // The component is a React component that is rendered while waiting for
   // the dependency to be resolved in state.
-  intermediateComponent: () => <div>Loading...</div>
+  // 'component' is aliased as 'intermediateComponent' as well.
+  component: LoadingComponent,
+
+  // You can use a render prop instead. The render function is passed the store
+  // state as an argument
+  render: (state) => {
+    return <LoadingComponent someProp={state.somePartOfState} />
+  },
 }
 ```
-
