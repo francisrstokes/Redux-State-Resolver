@@ -43,15 +43,12 @@ export class ReduxStateResolver extends React.Component {
           'action or syncAction property of a resolver must be a function'
         );
 
-        this.wait = true;
+        this.wait = !resolver.syncAction;
         dispatch(actionCreator(reduxState));
 
         this.setState(
           () => ({ resolver }),
-          () => {
-            this.wait = false;
-            if (resolver.syncAction) this.update();
-          }
+          () => this.wait = false
         );
         return;
       }
